@@ -31,6 +31,8 @@ ifdef STATIC
 	CFLAGS_ALL += -static -DSTATIC
 	LDFLAGS_ALL += -static
 endif
+CFLAGS += $(addprefix -I,$(EXTRA_INCLUDES))
+LDFLAGS += $(addprefix -L,$(EXTRA_LIBDIRS))
 ifeq ($(ENABLE_PYTHON), 1)
 	CFLAGS_ALL += $(shell python2.7-config --includes)
 endif

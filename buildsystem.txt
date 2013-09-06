@@ -143,6 +143,10 @@ CFLAGS::
 It overrides whatever is set by the `TARGET` variable and `RELEASE`
 variable.
 
+COMPILE_LUA::
+  If set to `yes` (the default), it compiles lua files for syntax
+  checking and faster loading. If set to anything else, it leaves the
+  lua files be.
 EXTRA_DEFINES::
   Additional defines that will be passed to the compiler.
 EXTRA_INCLUDES::
@@ -156,9 +160,6 @@ LDFLAGS::
 This overrides whatever is set by the `TARGET` and `RELEASE`
 variables.
 
-LOGIN_PASSWD_HALF::
-  A path to a file containing the static half of password used for the
-  challenge-response login.
 MAX_LOG_LEVEL::
   Maximum level of log messages that are output. Default is LOG_DEBUG.
 NO_DOC::
@@ -213,6 +214,8 @@ We use compiler defines (`-D`) to provide some configuration to the
 compiled source code, instead of generating `config.h`. These are the
 currently passed ones.
 
+COMPILE_LUA::
+  Defined if the lua files are being compiled.
 DEBUG::
   Defined if the RELEASE is not turned on.
 MAX_LOG_LEVEL::
@@ -223,8 +226,6 @@ OUTPUT_DIRECTORY::
 PAGE_SIZE::
   The size of the memory page. It has the value set in PAGE_SIZE
   variable in make.
-PASSWD_HALF::
-  The static half of password used for the challenge-response login.
 PLUGIN_PATH::
   Where the plugin libraries should be found at runtime.
 PREFIX::
