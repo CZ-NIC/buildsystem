@@ -39,6 +39,9 @@ endif
 ifeq ($(ENABLE_PYTHON), 1)
 	CFLAGS_ALL += $(shell python2.7-config --includes)
 endif
+ifeq ($(LUA_COMPILE),1)
+	CFLAGS_ALL += -DLUA_COMPILE
+endif
 
 # Magic to track dependencies on header files. They are stored in the .d files
 # by the compiler, then we load them on the next run and use them.
@@ -55,6 +58,8 @@ endif
 define COMMON_REGISTER
 
 $(1): $$(patsubst %,$(O)/.objs/$(3)%.o,$$($(2)_MODULES))
+$(1): CFLAGS_ALL += $$($(2)_CFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --cflags $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --cflags))
+$(1): LDFLAGS_ALL += $$($(2)_LDFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --libs $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --libs))
 $(1): CFLAGS_ALL += $$($(2)_CFLAGS)
 $(1): LDFLAGS_ALL += $$($(2)_LDFLAGS)
 ifdef STATIC
@@ -118,6 +123,15 @@ $(O)/$(1).html: $(O)/docs/$$(notdir $(1)).html
 
 endef
 
+# For lua
+define REGISTER_LUA
+
+ifneq (,$(findstring ^$(RESTRICT),^$(1)))
+TARGETS_LUA += $(O)/lua_lib/$(notdir $(1)).luac
+endif
+$(O)/lua_lib/$$(notdir $(1)).luac: $(S)/$$(addsuffix .lua,$(1))
+endef
+
 define REGISTER_SCRIPT
 
 ifneq (,$(findstring ^$(RESTRICT),^$(1)))
@@ -163,3 +177,8 @@ $(O)/docs/%:
 	$(M) DOC-HTML $@
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(ASCIIDOC) -o $@ $<
+
+$(O)/lua_lib/%:
+	$(M) LUAC $@
+	$(Q)mkdir -p $(dir $@)
+	$(Q)$(LUAC) -o $@ $<
