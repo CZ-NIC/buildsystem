@@ -144,7 +144,7 @@ It overrides whatever is set by the `TARGET` variable and `RELEASE`
 variable.
 
 COMPILE_LUA::
-  If set to `yes` (the default), it compiles lua files for syntax
+  If set to `1` (the default), it compiles lua files for syntax
   checking and faster loading. If set to anything else, it leaves the
   lua files be.
 EXTRA_DEFINES::
