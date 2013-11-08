@@ -28,7 +28,13 @@ CFLAGS_ALL += $(CFLAGS) --std=gnu99 -pedantic -Wall -Wextra -DOUTPUT_DIRECTORY=\
 LDFLAGS_ALL += $(LDFLAGS)
 
 ifdef STATIC
+	STATIC_LOCAL := 1
+	STACIC_SYSTEM := 1
+endif
+ifdef STATIC_LOCAL
 	CFLAGS_ALL += -static -DSTATIC
+endif
+ifdef STATIC_SYSTEM
 	LDFLAGS_ALL += -static
 endif
 CFLAGS += $(addprefix -I,$(EXTRA_INCLUDES))
@@ -59,12 +65,17 @@ $(1): CFLAGS_ALL += $$($(2)_CFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(sh
 $(1): LDFLAGS_ALL += $$($(2)_LDFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --libs $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --libs))
 $(1): CFLAGS_ALL += $$($(2)_CFLAGS)
 $(1): LDFLAGS_ALL += $$($(2)_LDFLAGS)
-ifdef STATIC
-TODO: Static linking
+ifdef STATIC_LOCAL
+$(1): LINK_LIBRARIES += $$(patsubst %,$(O)/lib/lib%.a,$$($(2)_LOCAL_LIBS))
+$(1): $$(patsubst %,$(O)/lib/lib%.a,$$($(2)_LOCAL_LIBS))
 else
-$(1): LINK_LIBRARIES += -L$(O)/lib -Wl,-R$(abspath $(O)/lib) $$(addprefix -l,$$($(2)_LOCAL_LIBS) $$($(2)_SYSTEM_LIBS))
+$(1): LINK_LIBRARIES += -L$(O)/lib -Wl,-R$(abspath $(O)/lib) $$(addprefix -l,$$($(2)_LOCAL_LIBS))
+endif
+ifdef STATIC_GLOBAL
+# TODO: The system libraries?
+else
+$(1): LINK_LIBRARIES += $$(addprefix -l,$$($(2)_SYSTEM_LIBS))
 $(1): LINK_SO_LIBRARIES += $$(addprefix -l,$$($(2)_SO_LIBS))
-$(1): $$(patsubst %,$(O)/lib/lib%.so,$$($(2)_LOCAL_LIBS))
 endif
 
 endef

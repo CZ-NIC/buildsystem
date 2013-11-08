@@ -182,6 +182,10 @@ S::
   expected to be changed on command line.
 STATIC::
   If set, link statically instead of dynamically.
+STATIC_LOCAL::
+  Link statically only local libraries.
+STATIC_SYSTEM::
+  Link dynamically only system libraries.
 TARGET::
   This can be used for cross-compiling for other architectures. It'll
   change the compiler used and flags. Currently, the value of `mips`
