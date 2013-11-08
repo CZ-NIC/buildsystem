@@ -52,7 +52,7 @@ DEP_FILES := $(shell if test -d $(O)/.deps ; then find $(O)/.deps -name '*.d' ; 
 include $(DEP_FILES)
 
 # Stuff to generate dependencies and link commands from the target_SOMETHING variables.
-ifdef STATIC
+ifdef STATIC_LOCAL
 LIB_SUFFIX :=.a
 else
 LIB_SUFFIX :=.so
