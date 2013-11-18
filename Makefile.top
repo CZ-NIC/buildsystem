@@ -70,6 +70,7 @@ $(1): LINK_LIBRARIES += $$(patsubst %,$(O)/lib/lib%.a,$$($(2)_LOCAL_LIBS))
 $(1): $$(patsubst %,$(O)/lib/lib%.a,$$($(2)_LOCAL_LIBS))
 else
 $(1): LINK_LIBRARIES += -L$(O)/lib -Wl,-R$(abspath $(O)/lib) $$(addprefix -l,$$($(2)_LOCAL_LIBS))
+$(1): $$(patsubst %,$(O)/lib/lib%.so,$$($(2)_LOCAL_LIBS))
 endif
 ifdef STATIC_GLOBAL
 # TODO: The system libraries?
