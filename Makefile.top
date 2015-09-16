@@ -7,7 +7,7 @@ DOCS =
 
 # Build compiler flags
 ifdef RELEASE
-	CFLAGS += -O2 -ggdb1
+	CFLAGS += -O2 -ggdb2
 else
 	CFLAGS += -ggdb3 -O0 -DDEBUG
 endif
