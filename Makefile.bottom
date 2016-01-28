@@ -1,6 +1,7 @@
 
 # Generate lists of targets and other things
 $(eval $(foreach BINARY,$(BINARIES),$(call REGISTER_BIN,$(BINARY))))
+$(eval $(foreach BINARY,$(BINARIES_NOTARGET),$(call REGISTER_BINARY_NOTARGET,$(BINARY))))
 $(eval $(foreach LIB,$(LIBRARIES),$(call REGISTER_LIB,$(LIB))))
 $(eval $(foreach LUA_FILE,$(LUA),$(call REGISTER_LUA,$(LUA_FILE))))
 ifndef NO_DOC

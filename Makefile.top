@@ -99,6 +99,16 @@ $(O)/$(1): $(O)/bin/$$(notdir $(1))
 
 endef
 
+define REGISTER_BINARY_NOTARGET
+
+$(call COMMON_REGISTER,$(O)/bin/$$(notdir $(1)),$$(notdir $(1)),$$(dir $(1)))
+$(O)/$(1): $(O)/bin/$$(notdir $(1))
+	$(M) LN $$@
+	$(Q)mkdir -p $$(dir $(O)/$(1))
+	$(Q)ln -sf $$(abspath $$<) $$@
+
+endef
+
 # Similar, for libraries
 define REGISTER_LIB
 

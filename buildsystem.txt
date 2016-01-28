@@ -79,7 +79,9 @@ following code:
 
 Only the `_SOURCES` variable is mandatory. You can create a shared
 library the same way, it is only appended to `LIBRARIES` instead to
-`BINARIES`.
+`BINARIES`. Also, if you want to let the build system know about a
+binary, but not build it by default (needed for the `check` target,
+for example), you can use `BINARIES_NOTARGET`.
 
 You can also generate documentation (`html` from the `txt` by
 asciidoc). It has no variables to influence it and you append them to
