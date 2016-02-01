@@ -182,6 +182,9 @@ $(O)/.objs/%.o: $(O)/.gen/%.c
 	$(Q)$(CC) $(CFLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
 	$(Q)$(S)/build/normalize_dep_file.pl $(O) $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@)) >$(patsubst %.o,%.d,$(subst .objs/,.deps/,$@))
 
+# Make sure the intermediate file is not deleted and more building is triggered
+.PRECIOUS: $(O)/.gen/%.embed.c
+
 $(O)/.gen/%.embed.c: $(O)/.gen/%.embedlist
 	$(M) EMBED $@
 	$(Q)mkdir -p $(dir $@ $(subst .gen/,.deps/,$@))

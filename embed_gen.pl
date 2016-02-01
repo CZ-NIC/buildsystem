@@ -44,18 +44,18 @@ my %idx;
 
 while (<$input>) {
 	chomp;
-	if (my ($idx, $type) = /^idx\s+(\w+)\s+(\w+)/) {
+	if (my ($idx, $type) = /^idx\s+(\S+)\s+(\S+)/) {
 		# Please generate an index into variable and type given
 		print $output "struct $type $idx\[\] = {\n";
 		print $output "	{ \"$_\", $_, $idx{$_} },\n" for sort keys %idx;
-		print $output "	{ NULL, 0 }\n";
+		print $output "	{ NULL, NULL, 0 }\n";
 		print $output "};\n";
 		# And reset the index, so we can generate more than one.
 		%idx = ();
 	} elsif (my ($passthrough) = /^\|(.*)/) {
 		# Include a line
 		print $output "$passthrough\n";
-	} elsif (my ($name, $path) = /^(\w+)\s+(\S+)\s*$/) {
+	} elsif (my ($name, $path) = /^(\S+)\s+(\S+)\s*$/) {
 		# Embed a file as an array
 		dep $path;
 		open my $f, '<', $path or die "Couldn't read file '$path': $!\n";
