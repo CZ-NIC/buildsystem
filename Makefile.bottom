@@ -17,6 +17,6 @@ endif
 all: $(TARGETS)
 
 clean:
-	rm -rf $(O)/bin $(O)/lib $(O)/docs $(O)/.objs $(O)/.deps $(O)/lua_lib $(O)/lua_plugins $(TARGETS)
+	rm -rf $(O)/bin $(O)/lib $(O)/docs $(O)/.objs $(O)/.deps $(O)/lua_lib $(O)/lua_plugins $(O)/.gen $(TARGETS)
 
 .PHONY: all clean

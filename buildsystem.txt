@@ -213,6 +213,29 @@ the `S` variable there should be adjusted to point to the sources
 directory. Optionally, other options can be tweaked there. The `O`
 variable can be left intact.
 
+Embedding files
+---------------
+
+The build system can generate c files (and compile them) that include
+other files inside them (in an array of bytes). To do so, create a
+`<x>.embedlist` file and include `<x>` into the list of modules for a
+target.
+
+Alternatively, you may provide a rule to generate
+`.gen/<path_to_target>/<x>.embedlist`.
+
+The file looks like this:
+
+  # These are passed through (without the leading |)
+  |passthrough line
+  |another passthrough line
+  # Generates an array name „name“, containing the file.
+  name file/path
+  # Generates an index, array of type „type“, each element having a
+  # string name, pointer to the array and size. The type must come
+  # from some passthrough lines.
+  idx index type
+
 Defines passed to the compiler
 ------------------------------
 

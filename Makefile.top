@@ -176,6 +176,24 @@ $(O)/.objs/%.o: $(S)/%.c
 	$(Q)$(CC) $(CFLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
 	$(Q)$(S)/build/normalize_dep_file.pl $(O) $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@)) >$(patsubst %.o,%.d,$(subst .objs/,.deps/,$@))
 
+$(O)/.objs/%.o: $(O)/.gen/%.c
+	$(M) CC $@
+	$(Q)mkdir -p $(dir $@ $(subst .objs/,.deps/,$@))
+	$(Q)$(CC) $(CFLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
+	$(Q)$(S)/build/normalize_dep_file.pl $(O) $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@)) >$(patsubst %.o,%.d,$(subst .objs/,.deps/,$@))
+
+$(O)/.gen/%.embed.c: $(O)/.gen/%.embedlist
+	$(M) EMBED $@
+	$(Q)mkdir -p $(dir $@ $(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/embed_gen.pl -i $< -o $@ -d $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/normalize_dep_file.pl $(abspath $(O)) $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@)) >$(patsubst %.c,%.d,$(subst .gen/,.deps/,$@))
+
+$(O)/.gen/%.embed.c: $(S)/%.embedlist
+	$(M) EMBED $@
+	$(Q)mkdir -p $(dir $@ $(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/embed_gen.pl -i $< -o $@ -d $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/normalize_dep_file.pl $(abspath $(O)) $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@)) >$(patsubst %.c,%.d,$(subst .gen/,.deps/,$@))
+
 $(O)/bin/%:
 	$(M) LD $@
 	$(Q)mkdir -p $(dir $@)
