@@ -29,7 +29,7 @@ LDFLAGS_ALL += $(LDFLAGS)
 
 ifdef STATIC
 	STATIC_LOCAL := 1
-	STACIC_SYSTEM := 1
+	STATIC_SYSTEM := 1
 endif
 ifdef STATIC_LOCAL
 	CFLAGS_ALL += -static -DSTATIC
@@ -63,8 +63,6 @@ define COMMON_REGISTER
 $(1): $$(patsubst %,$(O)/.objs/$(3)%.o,$$($(2)_MODULES))
 $(1): CFLAGS_ALL += $$($(2)_CFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --cflags $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --cflags))
 $(1): LDFLAGS_ALL += $$($(2)_LDFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --libs $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --libs))
-$(1): CFLAGS_ALL += $$($(2)_CFLAGS)
-$(1): LDFLAGS_ALL += $$($(2)_LDFLAGS)
 ifdef STATIC_LOCAL
 $(1): LINK_LIBRARIES += $$(patsubst %,$(O)/lib/lib%.a,$$($(2)_LOCAL_LIBS))
 $(1): $$(patsubst %,$(O)/lib/lib%.a,$$($(2)_LOCAL_LIBS))
