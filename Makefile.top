@@ -77,6 +77,9 @@ $(1): LINK_LIBRARIES += -L$(O)/lib -Wl,-R$(abspath $(O)/lib) $$(addprefix -l,$$(
 $(1): $$(patsubst %,$(O)/lib/lib%.so,$$($(2)_LOCAL_LIBS))
 endif
 
+.PHONY: cppcheck-$(1) cppcheck-all
+cppcheck-$$(notdir $$(basename $(1))): $$(patsubst %,$(S)/$(3)%.c,$$(filter-out %.embed,$$($(2)_MODULES)))
+
 endef
 
 # Function to register a binary to TARGETS and generate the rules to build it.
@@ -86,9 +89,13 @@ endef
 # $(eval $(call REGISTER_BIN,binary_name,src/path/to/directory))
 define REGISTER_BIN
 
+.PHONY: cppcheck
+
 ifneq (,$(findstring ^$(RESTRICT),^$(1)))
 TARGETS += $(O)/$(1)
+cppcheck: cppcheck-$$(notdir $$(basename $(1)))
 endif
+cppcheck-all: cppcheck-$$(notdir $$(basename $(1)))
 $(call COMMON_REGISTER,$(O)/bin/$$(notdir $(1)),$$(notdir $(1)),$$(dir $(1)))
 $(O)/$(1): $(O)/bin/$$(notdir $(1))
 	$(M) LN $$@
@@ -112,7 +119,9 @@ define REGISTER_LIB
 
 ifneq (,$(findstring ^$(RESTRICT),^$(1)))
 TARGETS += $(O)/$(1)$(LIB_SUFFIX)
+cppcheck: cppcheck-$$(notdir $$(basename $(1)))
 endif
+cppcheck-all: cppcheck-$$(notdir $$(basename $(1)))
 $(call COMMON_REGISTER,$(O)/lib/$$(notdir $(1)).a,$$(notdir $(1)),$$(dir $(1)))
 $(call COMMON_REGISTER,$(O)/lib/$$(notdir $(1)).so,$$(notdir $(1)),$$(dir $(1)))
 $(O)/$(1).a: $(O)/lib/$$(notdir $(1)).a
@@ -220,3 +229,7 @@ $(O)/lua_lib/%:
 	$(M) LUAC $@
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(LUAC) -o $@ $<
+
+cppcheck-%:
+	$(M) CCPC $@
+	$(Q)cppcheck --enable=style --enable=warning --std=c99 --suppress=allocaCalled --template='{file}:{line},{severity},{id},{message}' --inline-suppr --error-exitcode=1 -q $^

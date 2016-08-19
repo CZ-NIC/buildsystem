@@ -266,6 +266,17 @@ SOURCE_DIRECTORY::
 STATIC::
   Defined if STATIC is turned on in build system.
 
+Various useful targets
+----------------------
+
+clean::
+  Removes generated files.
+cppcheck::
+  Runs cppcheck with preset configuration on relevant source files.
+cppcheck-all::
+  Like above, but isn't restricted to targets in the current
+  directory.
+
 Missing bits
 ------------
 
