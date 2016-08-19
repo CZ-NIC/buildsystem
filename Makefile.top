@@ -232,4 +232,4 @@ $(O)/lua_lib/%:
 
 cppcheck-%:
 	$(M) CCPC $@
-	$(Q)cppcheck --enable=style --enable=warning --std=c99 --suppress=allocaCalled --template='{file}:{line},{severity},{id},{message}' --inline-suppr --error-exitcode=1 -q $^
+	$(Q)cppcheck --enable=style --enable=warning --std=c99 --suppress=allocaCalled --suppress=obsoleteFunctionsalloca --template='{file}:{line},{severity},{id},{message}' --inline-suppr --error-exitcode=1 -q $^
