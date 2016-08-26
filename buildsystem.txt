@@ -60,7 +60,7 @@ following code:
   # List sources. Without the .c at the end or path. The input files
   # don't need to be unique, so there can be another main.c in other
   # directory. You don't list the headers.
-  hello_world_SOURCES := \
+  hello_world_MODULES := \
     main \
     hello \
     world
@@ -77,11 +77,16 @@ following code:
   # the dependencies against the local libraries can be tracked.
   hello_world_LOCAL_LIBS := libworld
 
-Only the `_SOURCES` variable is mandatory. You can create a shared
+Only the `_MODULES` variable is mandatory. You can create a shared
 library the same way, it is only appended to `LIBRARIES` instead to
 `BINARIES`. Also, if you want to let the build system know about a
 binary, but not build it by default (needed for the `check` target,
 for example), you can use `BINARIES_NOTARGET`.
+
+The variable `_MODULES_3RDPARTY` is similar to `_MODULES`, but is
+excluded from some checks (like `cppcheck`). The idea is that
+third-party software may be included in the compilation, but nobody
+wants to fix their style.
 
 You can also generate documentation (`html` from the `txt` by
 asciidoc). It has no variables to influence it and you append them to
