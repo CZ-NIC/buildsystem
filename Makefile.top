@@ -5,6 +5,17 @@ TARGETS =
 BINARIES =
 DOCS =
 
+ifndef LANG_MODE
+	LANG_MODE := c
+endif
+ifeq ($(LANG_MODE),c)
+	COMPILER := $(CC)
+	FLAGS := C
+endif
+ifeq ($(LANG_MODE),cpp)
+	COMPILER := $(CXX)
+	FLAGS := CXX
+endif
 # Build compiler flags
 ifdef RELEASE
 	CFLAGS += -O2 -ggdb2
@@ -25,6 +36,7 @@ ifndef PLUGIN_PATH
 	PLUGIN_PATH := lib
 endif
 CFLAGS_ALL += $(CFLAGS) --std=gnu99 -pedantic -Wall -Wextra -fno-omit-frame-pointer -DOUTPUT_DIRECTORY=\"$(abspath $(O))\" -DSOURCE_DIRECTORY=\"$(abspath $(S))\" -DPAGE_SIZE=$(PAGE_SIZE) -DPREFIX=$(abspath $(O)) -DMAX_LOG_LEVEL=$(MAX_LOG_LEVEL) -DPLUGIN_PATH=\"$(PLUGIN_PATH)\" $(addprefix,-D,$(EXTRA_DEFINES))
+CXXFLAGS_ALL += $(CXXFLAGS) $(CFLAGS) --std=gnu++11 -pedantic -Wall -Wextra -fno-omit-frame-pointer -DOUTPUT_DIRECTORY=\"$(abspath $(O))\" -DSOURCE_DIRECTORY=\"$(abspath $(S))\" -DPAGE_SIZE=$(PAGE_SIZE) -DPREFIX=$(abspath $(O)) -DMAX_LOG_LEVEL=$(MAX_LOG_LEVEL) -DPLUGIN_PATH=\"$(PLUGIN_PATH)\" $(addprefix,-D,$(EXTRA_DEFINES))
 LDFLAGS_ALL += $(LDFLAGS)
 
 ifdef STATIC
@@ -33,17 +45,21 @@ ifdef STATIC
 endif
 ifdef STATIC_LOCAL
 	CFLAGS_ALL += -static -DSTATIC
+	CXXFLAGS_ALL += -static -DSTATIC
 endif
 ifdef STATIC_SYSTEM
 	LDFLAGS_ALL += -static
 endif
 CFLAGS += $(addprefix -I,$(EXTRA_INCLUDES))
+CXXFLAGS += $(addprefix -I,$(EXTRA_INCLUDES))
 LDFLAGS += $(addprefix -L,$(EXTRA_LIBDIRS))
 ifeq ($(ENABLE_PYTHON), 1)
 	CFLAGS_ALL += $(shell python2.7-config --includes)
+	CXXFLAGS_ALL += $(shell python2.7-config --includes)
 endif
 ifeq ($(LUA_COMPILE),1)
 	CFLAGS_ALL += -DLUA_COMPILE
+	CXXFLAGS_ALL += -DLUA_COMPILE
 endif
 
 # Magic to track dependencies on header files. They are stored in the .d files
@@ -62,6 +78,7 @@ define COMMON_REGISTER
 
 $(1): $$(patsubst %,$(O)/.objs/$(3)%.o,$$($(2)_MODULES) $$($(2)_MODULES_3RDPARTY))
 $(1): CFLAGS_ALL += $$($(2)_CFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --cflags $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --cflags))
+$(1): CXXFLAGS_ALL += $$($(2)_CXXFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --cflags $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --cflags))
 $(1): LDFLAGS_ALL += $$($(2)_LDFLAGS) $$(foreach CONFIG,$$($(2)_PKG_CONFIGS),$$(shell pkg-config --libs $$(CONFIG))) $$(foreach CONFIG,$$($(2)_EXE_CONFIGS),$$(shell $$(CONFIG)-config --libs))
 ifdef STATIC_GLOBAL
 # TODO: The system libraries?
@@ -77,7 +94,7 @@ $(1): LINK_LIBRARIES += -L$(O)/lib -Wl,-R$(abspath $(O)/lib) $$(addprefix -l,$$(
 $(1): $$(patsubst %,$(O)/lib/lib%.so,$$($(2)_LOCAL_LIBS))
 endif
 
-cppcheck-$$(notdir $$(basename $(1))): $$(patsubst %,$(S)/$(3)%.c,$$(filter-out %.embed,$$($(2)_MODULES)))
+cppcheck-$$(notdir $$(basename $(1))): $$(patsubst %,$(S)/$(3)%.$(LANG_MODE),$$(filter-out %.embed,$$($(2)_MODULES)))
 
 endef
 
@@ -176,37 +193,37 @@ $(O)/bin/$$(notdir $(1)): $(S)/$$(dir $(1))/$$($$(notdir $(1))_SOURCE)
 endef
 
 # Generic rules to compile and link
-$(O)/.objs/%.o: $(S)/%.c
-	$(M) CC $@
+$(O)/.objs/%.o: $(S)/%.$(LANG_MODE)
+	$(M) $(FLAGS) $@
 	$(Q)mkdir -p $(dir $@ $(subst .objs/,.deps/,$@))
-	$(Q)$(CC) $(CFLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
+	$(Q)$(COMPILER) $($(FLAGS)FLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
 	$(Q)$(S)/build/normalize_dep_file.pl $(O) $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@)) >$(patsubst %.o,%.d,$(subst .objs/,.deps/,$@))
 
-$(O)/.objs/%.o: $(O)/.gen/%.c
-	$(M) CC $@
+$(O)/.objs/%.o: $(O)/.gen/%.$(LANG_MODE)
+	$(M) $(FLAGS) $@
 	$(Q)mkdir -p $(dir $@ $(subst .objs/,.deps/,$@))
-	$(Q)$(CC) $(CFLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
+	$(Q)$(COMPILER) $($(FLAGS)FLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
 	$(Q)$(S)/build/normalize_dep_file.pl $(O) $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@)) >$(patsubst %.o,%.d,$(subst .objs/,.deps/,$@))
 
 # Make sure the intermediate file is not deleted and more building is triggered
-.PRECIOUS: $(O)/.gen/%.embed.c
+.PRECIOUS: $(O)/.gen/%.embed.$(LANG_MODE)
 
-$(O)/.gen/%.embed.c: $(O)/.gen/%.embedlist
+$(O)/.gen/%.embed.$(LANG_MODE): $(O)/.gen/%.embedlist
 	$(M) EMBED $@
 	$(Q)mkdir -p $(dir $@ $(subst .gen/,.deps/,$@))
-	$(Q)$(S)/build/embed_gen.pl -i $< -o $@ -d $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@))
-	$(Q)$(S)/build/normalize_dep_file.pl $(abspath $(O)) $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@)) >$(patsubst %.c,%.d,$(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/embed_gen.pl -i $< -o $@ -d $(patsubst %.$(LANG_MODE),%.pre,$(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/normalize_dep_file.pl $(abspath $(O)) $(patsubst %.$(LANG_MODE),%.pre,$(subst .gen/,.deps/,$@)) >$(patsubst %.$(LANG_MODE),%.d,$(subst .gen/,.deps/,$@))
 
-$(O)/.gen/%.embed.c: $(S)/%.embedlist
+$(O)/.gen/%.embed.$(LANG_MODE): $(S)/%.embedlist
 	$(M) EMBED $@
 	$(Q)mkdir -p $(dir $@ $(subst .gen/,.deps/,$@))
-	$(Q)$(S)/build/embed_gen.pl -i $< -o $@ -d $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@))
-	$(Q)$(S)/build/normalize_dep_file.pl $(abspath $(O)) $(patsubst %.c,%.pre,$(subst .gen/,.deps/,$@)) >$(patsubst %.c,%.d,$(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/embed_gen.pl -i $< -o $@ -d $(patsubst %.$(LANG_MODE),%.pre,$(subst .gen/,.deps/,$@))
+	$(Q)$(S)/build/normalize_dep_file.pl $(abspath $(O)) $(patsubst %.$(LANG_MODE),%.pre,$(subst .gen/,.deps/,$@)) >$(patsubst %.$(LANG_MODE),%.d,$(subst .gen/,.deps/,$@))
 
 $(O)/bin/%:
 	$(M) LD $@
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(CC) $(filter %.o,$^) -o $@ $(LDFLAGS_ALL) $(LINK_LIBRARIES)
+	$(Q)$(COMPILER) $(filter %.o,$^) -o $@ $(LDFLAGS_ALL) $(LINK_LIBRARIES)
 
 $(O)/lib/%.a:
 	$(M) AR $@
@@ -217,7 +234,7 @@ $(O)/lib/%.so: CFLAGS_ALL += -fPIC
 $(O)/lib/%.so:
 	$(M) LD $@
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(CC) -o $@ $(filter %.o,$^) $(LDFLAGS_ALL) $(LINK_SO_LIBRARIES) -shared
+	$(Q)$(COMPILER) -o $@ $(filter %.o,$^) $(LDFLAGS_ALL) $(LINK_SO_LIBRARIES) -shared
 
 $(O)/docs/%:
 	$(M) DOC-HTML $@

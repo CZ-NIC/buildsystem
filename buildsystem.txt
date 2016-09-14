@@ -292,3 +292,10 @@ Missing bits
   being set to `PREFIX/{bin/lib}`. The `PREFIX` would be new variable.
   But the plug-ins might want to go somewhere else.
 * Linking statically.
+
+C++ mode
+--------
+
+If the variable `LANG_MODE` is set to `cpp` before sourcing the build
+system, it compiles C++ instead of C. All the `CFLAGS`, etc, are
+switched to `CXXFLAGS`.
