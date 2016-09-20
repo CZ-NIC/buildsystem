@@ -255,4 +255,4 @@ FORCE:
 
 cppcheck-%: FORCE
 	$(M) CCPC $@
-	$(Q)cppcheck --enable=style --enable=warning --std=$(STANDARD) --suppress=allocaCalled --suppress=obsoleteFunctionsalloca --template='{file}:{line},{severity},{id},{message}' --inline-suppr --error-exitcode=1 -q $(filter-out FORCE,$^)
+	$(Q)cppcheck --enable=style --enable=warning --std=$(subst gnu,c,$(STANDARD)) --suppress=allocaCalled --suppress=obsoleteFunctionsalloca --template='{file}:{line},{severity},{id},{message}' --inline-suppr --error-exitcode=1 -q $(filter-out FORCE,$^)
