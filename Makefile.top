@@ -9,14 +9,14 @@ ifndef LANG_MODE
 	LANG_MODE := c
 endif
 ifeq ($(LANG_MODE),c)
-	COMPILER := $(CC)
+	COMPILER := CC
 	FLAGS := C
-	STANDARD := c99
+	STANDARD := gnu99
 endif
 ifeq ($(LANG_MODE),cpp)
-	COMPILER := $(CXX)
+	COMPILER := CXX
 	FLAGS := CXX
-	STANDARD=c++11
+	STANDARD := gnu++11
 endif
 # Build compiler flags
 ifdef RELEASE
@@ -37,8 +37,8 @@ endif
 ifndef PLUGIN_PATH
 	PLUGIN_PATH := lib
 endif
-CFLAGS_ALL += $(CFLAGS) --std=$(STANDARD) -pedantic -Wall -Wextra -fno-omit-frame-pointer -DOUTPUT_DIRECTORY=\"$(abspath $(O))\" -DSOURCE_DIRECTORY=\"$(abspath $(S))\" -DPAGE_SIZE=$(PAGE_SIZE) -DPREFIX=$(abspath $(O)) -DMAX_LOG_LEVEL=$(MAX_LOG_LEVEL) -DPLUGIN_PATH=\"$(PLUGIN_PATH)\" $(addprefix,-D,$(EXTRA_DEFINES))
-CXXFLAGS_ALL += $(CXXFLAGS) $(CFLAGS) --std=$(STANDARD) -pedantic -Wall -Wextra -fno-omit-frame-pointer -DOUTPUT_DIRECTORY=\"$(abspath $(O))\" -DSOURCE_DIRECTORY=\"$(abspath $(S))\" -DPAGE_SIZE=$(PAGE_SIZE) -DPREFIX=$(abspath $(O)) -DMAX_LOG_LEVEL=$(MAX_LOG_LEVEL) -DPLUGIN_PATH=\"$(PLUGIN_PATH)\" $(addprefix,-D,$(EXTRA_DEFINES))
+CFLAGS_ALL += $(CFLAGS) --std=$(STANDARD) -pedantic -Wall -Wextra -fno-omit-frame-pointer -DOUTPUT_DIRECTORY=\"$(abspath $(O))\" -DSOURCE_DIRECTORY=\"$(abspath $(S))\" -DPAGE_SIZE=$(PAGE_SIZE) -DPREFIX=$(abspath $(O)) -DMAX_LOG_LEVEL=$(MAX_LOG_LEVEL) -DPLUGIN_PATH=\"$(PLUGIN_PATH)\" $(addprefix -D,$(EXTRA_DEFINES))
+CXXFLAGS_ALL += $(CXXFLAGS) $(CFLAGS) --std=$(STANDARD) -pedantic -Wall -Wextra -fno-omit-frame-pointer -DOUTPUT_DIRECTORY=\"$(abspath $(O))\" -DSOURCE_DIRECTORY=\"$(abspath $(S))\" -DPAGE_SIZE=$(PAGE_SIZE) -DPREFIX=$(abspath $(O)) -DMAX_LOG_LEVEL=$(MAX_LOG_LEVEL) -DPLUGIN_PATH=\"$(PLUGIN_PATH)\" $(addprefix -D,$(EXTRA_DEFINES))
 LDFLAGS_ALL += $(LDFLAGS)
 
 ifdef STATIC
@@ -196,15 +196,15 @@ endef
 
 # Generic rules to compile and link
 $(O)/.objs/%.o: $(S)/%.$(LANG_MODE)
-	$(M) $(FLAGS) $@
+	$(M) $(COMPILER) $@
 	$(Q)mkdir -p $(dir $@ $(subst .objs/,.deps/,$@))
-	$(Q)$(COMPILER) $($(FLAGS)FLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
+	$(Q)$($(COMPILER)) $($(FLAGS)FLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
 	$(Q)$(S)/build/normalize_dep_file.pl $(O) $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@)) >$(patsubst %.o,%.d,$(subst .objs/,.deps/,$@))
 
 $(O)/.objs/%.o: $(O)/.gen/%.$(LANG_MODE)
-	$(M) $(FLAGS) $@
+	$(M) $(COMPILER) $@
 	$(Q)mkdir -p $(dir $@ $(subst .objs/,.deps/,$@))
-	$(Q)$(COMPILER) $($(FLAGS)FLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
+	$(Q)$($(COMPILER)) $($(FLAGS)FLAGS_ALL) -c $< -o $@ -MD -MF $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@))
 	$(Q)$(S)/build/normalize_dep_file.pl $(O) $(patsubst %.o,%.pre,$(subst .objs/,.deps/,$@)) >$(patsubst %.o,%.d,$(subst .objs/,.deps/,$@))
 
 # Make sure the intermediate file is not deleted and more building is triggered
@@ -225,7 +225,7 @@ $(O)/.gen/%.embed.$(LANG_MODE): $(S)/%.embedlist
 $(O)/bin/%:
 	$(M) LD $@
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(COMPILER) $(filter %.o,$^) -o $@ $(LDFLAGS_ALL) $(LINK_LIBRARIES)
+	$(Q)$($(COMPILER)) $(filter %.o,$^) -o $@ $(LDFLAGS_ALL) $(LINK_LIBRARIES)
 
 $(O)/lib/%.a:
 	$(M) AR $@
@@ -236,7 +236,7 @@ $(O)/lib/%.so: CFLAGS_ALL += -fPIC
 $(O)/lib/%.so:
 	$(M) LD $@
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(COMPILER) -o $@ $(filter %.o,$^) $(LDFLAGS_ALL) $(LINK_SO_LIBRARIES) -shared
+	$(Q)$($(COMPILER)) -o $@ $(filter %.o,$^) $(LDFLAGS_ALL) $(LINK_SO_LIBRARIES) -shared
 
 $(O)/docs/%:
 	$(M) DOC-HTML $@
