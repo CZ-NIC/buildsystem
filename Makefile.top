@@ -238,6 +238,7 @@ $(O)/lib/%.a:
 	$(Q)$(AR) -rc $@ $(filter %.o,$^)
 
 $(O)/lib/%.so: CFLAGS_ALL += -fPIC
+$(O)/lib/%.so: CXXFLAGS_ALL += -fPIC
 $(O)/lib/%.so:
 	$(M) LD $@
 	$(Q)mkdir -p $(dir $@)
